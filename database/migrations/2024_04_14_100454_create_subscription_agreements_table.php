@@ -13,14 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('companies', function (Blueprint $table) {
+        Schema::create('subscription_agreements', function (Blueprint $table) {
             $table->id();
-            $table->string('company_name');
-            $table->string('ceo');
-            $table->string('establishment');
-            $table->string('post_code');
-            $table->string('address');
-            $table->string('business');
+            $table->text('content');
             $table->timestamps();
         });
     }
@@ -32,6 +27,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('companies');
+        Schema::dropIfExists('subscription_agreements');
     }
 };

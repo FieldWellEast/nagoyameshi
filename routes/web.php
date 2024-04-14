@@ -21,6 +21,7 @@ use App\Http\Controllers\UserSubscriptionController;
 use App\Http\Controllers\EmailTemplateController;
 use App\Http\Controllers\SuccessPageController;
 use App\Http\Controllers\ShopSearchController;
+use App\Http\Controllers\SubscriptionAgreementController;
 
 /*
 |--------------------------------------------------------------------------
@@ -106,6 +107,7 @@ Route::post('/user/register-membership', [UserController::class, 'registerMember
 Route::post('/user/cancel-membership', [UserController::class, 'cancelMembership'])->name('user.cancelMembership');
 Route::put('/user/update/{id}', [UserController::class, 'update'])->name('user.update');
 
+
 // 有料会員
 Route::get('/subscription/register', [UserSubscriptionController::class, 'register'])->name('subscription.register');
 Route::post('/user/subscription/register_card', [UserSubscriptionController::class, 'registerCard'])->name('user.subscription.register_card');
@@ -120,8 +122,7 @@ Route::get('/card/edit', [UserSubscriptionController::class, 'credit_edit'])->na
 Route::get('/subscription/details', [UserSubscriptionController::class, 'details'])->name('subscription.details');
 Route::get('/register_card', [UserSubscriptionController::class, 'registerCard'])->name('register_card');
 
+
+
 //メールテンプレート
 // Route::resource('email-templates', EmailTemplateController::class);
-Auth::routes();
-
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use App\Models\User;
+use App\Models\SubscriptionAgreement;
 use Carbon\Carbon;
 use Payjp\Payjp;
 use Payjp\Plan;
@@ -17,17 +18,16 @@ use Cart;
 
 class UserSubscriptionController extends Controller
 {
+    public function agreement() {
+        // subscription_agreementsテーブルから最初のレコードを取得
+        $subscriptionAgreement = SubscriptionAgreement::first();
+        return view('user.subscription_agreement', compact('subscriptionAgreement'));
+    }
+
     public function details()
     {
         // 有料会員情報の取得などの処理
-
-        // ビューを表示する
         return view('user.subscription_details');
-    }
-
-    public function agreement() {
-        // GETリクエストに対する処理を記述
-        return view('user.subscription_agreement');
     }
 
     
@@ -167,156 +167,156 @@ class UserSubscriptionController extends Controller
         }
     }
     
-    // public function apply(Request $request)
-    // {
-    //     // ユーザーのIDを取得する
-    //     $userId = Auth::id();
+    public function apply(Request $request)
+    {
+        // ユーザーのIDを取得する
+        $userId = Auth::id();
 
-    //     // 現在の日付を取得
-    //     $currentDate = now();
+        // 現在の日付を取得
+        $currentDate = now();
 
-    //     // usersテーブルの対象ユーザーのレコードを取得し、paid_membership_start_dateを更新
-    //     $user = User::find($userId);
-    //     $user->paid_membership_start_date = $currentDate;
+        // usersテーブルの対象ユーザーのレコードを取得し、paid_membership_start_dateを更新
+        $user = User::find($userId);
+        $user->paid_membership_start_date = $currentDate;
 
-    //     // 変更をデータベースに保存
-    //     $user->save();
+        // 変更をデータベースに保存
+        $user->save();
 
-    //     // その他の処理（リダイレクトなど）を行う
-    //     return redirect()->route('success_page');
-    // }
+        // その他の処理（リダイレクトなど）を行う
+        return redirect()->route('success_page');
+    }
 
-    // public function destroy(Request $request)
-    // {
-    //     $user_shoppingcarts = DB::table('shoppingcart')->get();
-    //     $number = DB::table('shoppingcart')->where('instance', Auth::user()->id)->count();
+    public function destroy(Request $request)
+    {
+        $user_shoppingcarts = DB::table('shoppingcart')->get();
+        $number = DB::table('shoppingcart')->where('instance', Auth::user()->id)->count();
 
-    //     $count = $user_shoppingcarts->count();
+        $count = $user_shoppingcarts->count();
 
-    //     $count += 1;
-    //     $number += 1;
+        $count += 1;
+        $number += 1;
 
-    //     // カート情報を保存
-    //     Cart::instance(Auth::user()->id)->store($count);
+        // カート情報を保存
+        Cart::instance(Auth::user()->id)->store($count);
 
-    //     // 購入履歴を作成
-    //     DB::table('shoppingcart')->where('instance', Auth::user()->id)
-    //         ->where('number', null)
-    //         ->update(
-    //             [
-    //                 'code' => substr(str_shuffle('1234567890abcdefghijklmnopqrstuvwxyz'), 0, 10),
-    //                 'number' => $number,
-    //                 'price_total' => Cart::instance(Auth::user()->id)->total(),
-    //                 'qty' => Cart::instance(Auth::user()->id)->count(),
-    //                 'buy_flag' => true,
-    //                 'updated_at' => date("Y/m/d H:i:s")
-    //             ]
-    //         );
+        // 購入履歴を作成
+        DB::table('shoppingcart')->where('instance', Auth::user()->id)
+            ->where('number', null)
+            ->update(
+                [
+                    'code' => substr(str_shuffle('1234567890abcdefghijklmnopqrstuvwxyz'), 0, 10),
+                    'number' => $number,
+                    'price_total' => Cart::instance(Auth::user()->id)->total(),
+                    'qty' => Cart::instance(Auth::user()->id)->count(),
+                    'buy_flag' => true,
+                    'updated_at' => date("Y/m/d H:i:s")
+                ]
+            );
 
-    //     // 決済処理
+        // 決済処理
 
-    //     $pay_jp_secret = env('PAYJP_SECRET_KEY');
-    //     \Payjp\Payjp::setApiKey($pay_jp_secret);
+        $pay_jp_secret = env('PAYJP_SECRET_KEY');
+        \Payjp\Payjp::setApiKey($pay_jp_secret);
 
-    //     $user = Auth::user();
+        $user = Auth::user();
 
-    //     try {
-    //         $res = \Payjp\Charge::create(
-    //             [
-    //                 "customer" => $user->token,
-    //                 "amount" => Cart::instance(Auth::user()->id)->total(),
-    //                 "currency" => 'jpy'
-    //             ]
-    //         );
-    //     } catch (\Exception $e) {
-    //         Log::error($e->getMessage());
-    //         return redirect()->back()->with('error', '決済処理に失敗しました。');
-    //     }
+        try {
+            $res = \Payjp\Charge::create(
+                [
+                    "customer" => $user->token,
+                    "amount" => Cart::instance(Auth::user()->id)->total(),
+                    "currency" => 'jpy'
+                ]
+            );
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return redirect()->back()->with('error', '決済処理に失敗しました。');
+        }
 
-    //     // カートを空にする
-    //     Cart::instance(Auth::user()->id)->destroy();
+        // カートを空にする
+        Cart::instance(Auth::user()->id)->destroy();
 
-    //     return redirect()->route('carts.index');
-    // }
+        return redirect()->route('carts.index');
+    }
 
 
 
-    //     public function credit_edit()
-    //     {
-    //         // Pay.jpのAPIキーを設定
-    //         Payjp::setApiKey(config('services.payjp.secret'));
+        public function credit_edit()
+        {
+            // Pay.jpのAPIキーを設定
+            Payjp::setApiKey(config('services.payjp.secret'));
         
-    //         // ユーザーのPay.jp情報を取得
-    //         $user = Auth::user();
-    //         $customer = \Payjp\Customer::retrieve($user->token);
+            // ユーザーのPay.jp情報を取得
+            $user = Auth::user();
+            $customer = \Payjp\Customer::retrieve($user->token);
         
-    //         // StripeのAPIキーを取得
-    //         $stripeKey = env('STRIPE_KEY');
+            // StripeのAPIキーを取得
+            $stripeKey = env('STRIPE_KEY');
         
-    //         // ビューにカード情報、ユーザー情報を渡す
-    //         return view('card.edit', [
-    //             'user' => $user,
-    //             'customer' => $customer,
-    //         ]);
-    //     }
+            // ビューにカード情報、ユーザー情報を渡す
+            return view('card.edit', [
+                'user' => $user,
+                'customer' => $customer,
+            ]);
+        }
         
-    //     public function showCard()
-    //     {
-    //         // ユーザーの認証
-    //         $user = Auth::user();
+        public function showCard()
+        {
+            // ユーザーの認証
+            $user = Auth::user();
 
-    //         try {
-    //             // Pay.jpのAPIキーを設定
-    //             Payjp::setApiKey(config('services.payjp.secret'));
+            try {
+                // Pay.jpのAPIキーを設定
+                Payjp::setApiKey(config('services.payjp.secret'));
 
-    //             // ユーザーのPay.jp顧客情報を取得
-    //             $customer = \Payjp\Customer::retrieve($user->token);
+                // ユーザーのPay.jp顧客情報を取得
+                $customer = \Payjp\Customer::retrieve($user->token);
                 
-    //             // ビューにカード情報とユーザー情報を渡して表示
-    //             return view('card.show', ['user' => $user, 'customer' => $customer]);
-    //         } catch (\Exception $e) {
+                // ビューにカード情報とユーザー情報を渡して表示
+                return view('card.show', ['user' => $user, 'customer' => $customer]);
+            } catch (\Exception $e) {
                 
-    //             return redirect()->back()->with('error', 'カード情報の取得に失敗しました。');
-    //         }
-    //     }
+                return redirect()->back()->with('error', 'カード情報の取得に失敗しました。');
+            }
+        }
    
-    //     public function updateCard(Request $request)
-    //     {
-    //         // バリデーションルールの設定
-    //         $rules = [
-    //             'card_token' => 'required|string', // Pay.jpのカードトークン
-    //         ];
+        public function updateCard(Request $request)
+        {
+            // バリデーションルールの設定
+            $rules = [
+                'card_token' => 'required|string', // Pay.jpのカードトークン
+            ];
             
-    //         // バリデーションの実行
-    //         $validatedData = $request->validate($rules);
+            // バリデーションの実行
+            $validatedData = $request->validate($rules);
             
-    //         // ユーザーの認証
-    //         $user = Auth::user();
+            // ユーザーの認証
+            $user = Auth::user();
             
-    //         // Pay.jpのAPIキーを設定
-    //         Payjp::setApiKey(config('services.payjp.secret'));
+            // Pay.jpのAPIキーを設定
+            Payjp::setApiKey(config('services.payjp.secret'));
             
-    //         try {
-    //             // ユーザーのPay.jp顧客情報を取得
-    //             $customer = \Payjp\Customer::retrieve($user->payjp_id); // payjp_idはPay.jpの顧客IDを保持するユーザーの属性です
+            try {
+                // ユーザーのPay.jp顧客情報を取得
+                $customer = \Payjp\Customer::retrieve($user->payjp_id); // payjp_idはPay.jpの顧客IDを保持するユーザーの属性です
                 
-    //             // 新しいカード情報を追加し、デフォルトカードとして設定
-    //             $customer->cards->create(array(
-    //                 "card" => $request->card_token
-    //             ));
+                // 新しいカード情報を追加し、デフォルトカードとして設定
+                $customer->cards->create(array(
+                    "card" => $request->card_token
+                ));
                 
-    //             // カスタマーオブジェクトを保存
-    //             $customer->save();
+                // カスタマーオブジェクトを保存
+                $customer->save();
                 
                 
-    //             // 成功メッセージをセッションに格納してリダイレクト
-    //             return redirect()->route('customer.edit')->with('success', 'カード情報が更新されました。');
-    //         } catch (\Exception $e) {
-    //             // エラーメッセージをセッションに格納してリダイレクト
-    //             Log::error('Failed to update customer card: ' . $e->getMessage());
-    //             return redirect()->back()->with('error', 'カード情報の更新に失敗しました。');
-    //         }
-    //     }
+                // 成功メッセージをセッションに格納してリダイレクト
+                return redirect()->route('customer.edit')->with('success', 'カード情報が更新されました。');
+            } catch (\Exception $e) {
+                // エラーメッセージをセッションに格納してリダイレクト
+                Log::error('Failed to update customer card: ' . $e->getMessage());
+                return redirect()->back()->with('error', 'カード情報の更新に失敗しました。');
+            }
+        }
         
                  
 
