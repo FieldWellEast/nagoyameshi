@@ -52,7 +52,13 @@ class SubscriptionAgreementController extends Controller
     {
         $agreement = SubscriptionAgreement::findOrFail($id);
 
-        $form = new Form(new SubscriptionAgreement());
+        $form = new Form($agreement); 
+
+        $form->model($agreement);
+
+        $form->method('PUT');
+
+        $form->action(route(config('admin.route.prefix') . '.subscription_agreements.update', ['id' => $id]));
 
         $form->textarea('content', 'Content')->rules('required|string')->default($agreement->content);
 
@@ -61,7 +67,7 @@ class SubscriptionAgreementController extends Controller
             ->description('Edit the subscription agreement')
             ->body($form->edit($id));
     }
-    
+        
     protected function form($agreement)
     {
         $form = new Form();
@@ -70,6 +76,16 @@ class SubscriptionAgreementController extends Controller
         $form->textarea('content', __('Content'))->rules('required')->default($agreement->content);
         
         return $form;
+    }
+
+    public function update($id, Request $request)
+    {
+        $agreement = SubscriptionAgreement::findOrFail($id);
+        $agreement->content = $request->input('content');
+        $agreement->save();
+
+        return redirect()->route(config('admin.route.prefix') . '.subscription_agreements.index')
+                        ->with('success', 'Subscription Agreement successfully updated.');
     }
 
 
