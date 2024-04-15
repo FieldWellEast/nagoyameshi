@@ -24,6 +24,4 @@ Route::group([
     $router->resource('subscription_agreements', SubscriptionAgreementController::class);
     $router->resource('seo_data', SeoDataController::class);
 
-    // 追加するルート
-    Route::put('/subscription_agreements/{id}', 'SubscriptionAgreementController@update')->name('subscription_agreements.update');
 });

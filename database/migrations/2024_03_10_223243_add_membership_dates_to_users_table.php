@@ -14,9 +14,9 @@ return new class extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->date('paid_membership_start_date')->nullable();
+            $table->date('paid_membership_start_date')->nullable()->change();
             $table->date('paid_membership_update_date')->nullable();
-            $table->date('paid_membership_cancel_date')->nullable();
+            $table->date('paid_membership_cancel_date')->nullable()->change();
         });
     }
 

@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('subscription_agreements', function (Blueprint $table) {
-            $table->text('content')->after('id')->nullable();
+            $table->text('content')->after('id')->nullable()->change();
         });
     }
 

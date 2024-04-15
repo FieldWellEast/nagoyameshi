@@ -4,10 +4,12 @@ namespace App\Admin\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Model;
 use App\Models\SubscriptionAgreement;
 use Encore\Admin\Facades\Admin;
 use Encore\Admin\Layout\Content;
 use Encore\Admin\Widgets\Form;
+
 
 class SubscriptionAgreementController extends Controller
 {
@@ -81,9 +83,9 @@ class SubscriptionAgreementController extends Controller
     public function update($id, Request $request)
     {
         $agreement = SubscriptionAgreement::findOrFail($id);
-        $agreement->content = $request->input('content');
-        $agreement->save();
-
+        $agreement->content = html_entity_decode($request->input('content')); // HTMLエンティティをデコード
+        $agreement->save(); // データベースに保存
+    
         return redirect()->route(config('admin.route.prefix') . '.subscription_agreements.index')
                         ->with('success', 'Subscription Agreement successfully updated.');
     }
